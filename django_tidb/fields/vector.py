@@ -140,7 +140,6 @@ class VectorIndex(Index):
     from django.db import models
     from django_tidb.fields.vector import VectorField, VectorIndex, CosineDistance
 
-
     class Document(models.Model):
         content = models.TextField()
         embedding = VectorField(dimensions=3)
@@ -148,7 +147,7 @@ class VectorIndex(Index):
             indexes = [
                 VectorIndex(CosineDistance("embedding"), name='idx_cos'),
             ]
-    
+
     # Create a document
     Document.objects.create(
         content="test content",
@@ -183,9 +182,10 @@ class VectorIndex(Index):
         )
         fields = None
         col_suffixes = None
-        # TODO: simplify the sql_template after we support `ADD_TIFLASH_ON_DEMAND`
-        #       in the `CREATE VECTOR INDEX ...`
-        sql_template = "ALTER TABLE %(table)s SET TIFLASH REPLICA 1; CREATE VECTOR INDEX %(name)s ON %(table)s%(using)s (%(columns)s)%(extra)s"
+        # TODO: remove the tiflash replica setting statement from sql_template
+        #       after we support `ADD_TIFLASH_ON_DEMAND` in the `CREATE VECTOR INDEX ...`
+        sql_template = """ALTER TABLE %(table)s SET TIFLASH REPLICA 1;
+        CREATE VECTOR INDEX %(name)s ON %(table)s%(using)s (%(columns)s)%(extra)s"""
         return schema_editor._create_index_sql(
             model,
             fields=fields,
