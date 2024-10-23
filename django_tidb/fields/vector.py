@@ -177,7 +177,9 @@ class VectorIndex(Index):
             index_expression = models.indexes.IndexExpression(expression)
             index_expression.set_wrapper_classes(schema_editor.connection)
             index_expressions.append(index_expression)
-        expressions = models.indexes.ExpressionList(*index_expressions).resolve_expression(
+        expressions = models.indexes.ExpressionList(
+            *index_expressions
+        ).resolve_expression(
             models.sql.query.Query(model, alias_cols=False),
         )
         fields = None
