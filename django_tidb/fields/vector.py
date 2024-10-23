@@ -134,6 +134,33 @@ class VectorField(Field):
 
 
 class VectorIndex(Index):
+    """
+    Example:
+    ```python
+    from django.db import models
+    from django_tidb.fields.vector import VectorField, VectorIndex, CosineDistance
+
+
+    class Document(models.Model):
+        content = models.TextField()
+        embedding = VectorField(dimensions=3)
+        class Meta:
+            indexes = [
+                VectorIndex(CosineDistance("embedding"), name='idx_cos'),
+            ]
+    
+    # Create a document
+    Document.objects.create(
+        content="test content",
+        embedding=[1, 2, 3],
+    )
+
+    # Query with distance
+    Document.objects.alias(
+        distance=CosineDistance('embedding', [3, 1, 2])
+    ).filter(distance__lt=5)
+    ```
+    """
 
     def __init__(
         self,
@@ -184,6 +211,8 @@ class DistanceBase(Func):
         vector: a vector to compare against
         """
         expressions = [expression]
+        # When using the distance function as expression in the vector index
+        # statement, the `vector` is None
         if vector is not None:
             if not hasattr(vector, "resolve_expression"):
                 vector = Value(encode_vector(vector))
